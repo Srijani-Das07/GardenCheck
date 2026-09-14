@@ -6,6 +6,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use(express.static("public"));
 app.use("/api/users", require("./routes/users"));
 app.use("/api/species", require("./routes/species"));
 app.use("/api/plants", require("./routes/plants"));
