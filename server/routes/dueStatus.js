@@ -2,8 +2,9 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
-router.get("/", async (req, res) => {
-    const result = await db.execute(`
+router.get("/:userId", async (req, res) => {
+    const result = await db.execute({
+        sql: `
         SELECT
             plants.id AS plant_id,
             plants.nickname,
@@ -19,7 +20,10 @@ router.get("/", async (req, res) => {
             WHERE action_type = 'watered'
             GROUP BY plant_id
         ) last_watered ON last_watered.plant_id = plants.id
-    `);
+        WHERE plants.user_id = ?
+    `,
+        args: [req.params.userId]
+    });
     res.json(result.rows);
 });
 

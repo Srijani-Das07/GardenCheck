@@ -3,17 +3,8 @@ const router = express.Router();
 const db = require("../db");
 
 router.get("/", async (req, res) => {
-    const result = await db.execute("SELECT * FROM users");
+    const result = await db.execute("SELECT id, name, email FROM users");
     res.json(result.rows);
-});
-
-router.post("/", async (req, res) => {
-    const { name, email } = req.body;
-    const result = await db.execute({
-        sql: "INSERT INTO users (name, email) VALUES (?, ?)",
-        args: [name, email]
-    });
-    res.json({ id: Number(result.lastInsertRowid) });
 });
 
 router.put("/:id", async (req, res) => {

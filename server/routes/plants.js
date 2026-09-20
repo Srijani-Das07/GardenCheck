@@ -2,13 +2,13 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
-router.get("/", async (req, res) => {
-    const result = await db.execute(`
-        SELECT plants.*, species.name AS species_name, users.name AS owner_name
-        FROM plants
-        JOIN species ON plants.species_id = species.id
-        JOIN users ON plants.user_id = users.id
-    `);
+router.get("/user/:userId", async (req, res) => {
+    const result = await db.execute({
+        sql: `SELECT plants.*, species.name AS species_name
+              FROM plants JOIN species ON plants.species_id = species.id
+              WHERE plants.user_id = ?`,
+        args: [req.params.userId]
+    });
     res.json(result.rows);
 });
 

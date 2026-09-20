@@ -5,6 +5,11 @@ require("dotenv").config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use("/api/auth", require("./routes/auth"));
+
+app.get("/", (req, res) => {
+    res.sendFile(__dirname + "/../public/login.html");
+});
 
 app.use(express.static("public"));
 app.use("/api/users", require("./routes/users"));
