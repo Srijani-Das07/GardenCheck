@@ -7,8 +7,10 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/auth", require("./routes/auth"));
 
+const path = require("path");
+
 app.get("/", (req, res) => {
-    res.sendFile(__dirname + "/../public/login.html");
+    res.sendFile(path.join(__dirname, "../public/login.html"));
 });
 
 app.use(express.static("public"));
