@@ -9,6 +9,7 @@ header {
     background: #3f6d4e;
     color: white;
     padding: 1rem 2rem;
+    position: relative;
 }
 header h1 { margin: 0 0 0.5rem 0; }
 nav button {
@@ -130,7 +131,15 @@ th { background: #e8efe9; }
 .auth-message { margin-top: 0.6rem; font-size: 0.85rem; }
 .auth-message.error { color: #b3261e; }
 .auth-switch { text-align: center; font-size: 0.85rem; margin-top: 1rem; }
-.user-bar { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; color: white; }
+.user-bar {
+    position: absolute;
+    top: 1rem;
+    right: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0;
+}
 .user-bar button {
     background: white;
     color: #3f6d4e;
