@@ -1,5 +1,16 @@
+const currentUser = JSON.parse(sessionStorage.getItem("gardenUser") || "null");
+if (!currentUser) {
+    window.location.href = "login.html";
+}
+
 const API = "/api";
 let currentPlantId = null;
+
+document.getElementById("currentUserName").textContent = currentUser.name;
+document.getElementById("logoutBtn").addEventListener("click", () => {
+    sessionStorage.removeItem("gardenUser");
+    window.location.href = "login.html";
+});
 
 // tab switching
 document.querySelectorAll(".tab-btn").forEach(btn => {
@@ -17,40 +28,6 @@ async function api(path, options = {}) {
         ...options
     });
     return res.json();
-}
-
-// ---------- USERS ----------
-async function loadUsers() {
-    const users = await api("/users");
-    const tbody = document.querySelector("#usersTable tbody");
-    tbody.innerHTML = "";
-    const select = document.getElementById("plantUser");
-    select.innerHTML = "";
-    users.forEach(u => {
-        tbody.innerHTML += `<tr>
-            <td>${u.name}</td><td>${u.email}</td>
-            <td><button onclick="deleteUser(${u.id})">Delete</button></td>
-        </tr>`;
-        select.innerHTML += `<option value="${u.id}">${u.name}</option>`;
-    });
-}
-
-document.getElementById("userForm").addEventListener("submit", async e => {
-    e.preventDefault();
-    await api("/users", {
-        method: "POST",
-        body: JSON.stringify({
-            name: document.getElementById("userName").value,
-            email: document.getElementById("userEmail").value
-        })
-    });
-    e.target.reset();
-    loadUsers();
-});
-
-async function deleteUser(id) {
-    await api(`/users/${id}`, { method: "DELETE" });
-    loadUsers();
 }
 
 // ---------- SPECIES ----------
@@ -97,12 +74,12 @@ async function deleteSpecies(id) {
 
 // ---------- PLANTS ----------
 async function loadPlants() {
-    const plants = await api("/plants");
+    const plants = await api(`/plants/user/${currentUser.id}`);
     const tbody = document.querySelector("#plantsTable tbody");
     tbody.innerHTML = "";
     plants.forEach(p => {
         tbody.innerHTML += `<tr>
-            <td>${p.nickname || "-"}</td><td>${p.species_name}</td><td>${p.owner_name}</td>
+            <td>${p.nickname || "-"}</td><td>${p.species_name}</td>
             <td>${p.location || "-"}</td><td>${p.date_acquired}</td>
             <td><button onclick="openLogModal(${p.id}, 'care')">Log Care</button></td>
             <td><button onclick="openLogModal(${p.id}, 'health')">Log Health</button></td>
@@ -116,7 +93,7 @@ document.getElementById("plantForm").addEventListener("submit", async e => {
     await api("/plants", {
         method: "POST",
         body: JSON.stringify({
-            user_id: Number(document.getElementById("plantUser").value),
+            user_id: currentUser.id,
             species_id: Number(document.getElementById("plantSpecies").value),
             nickname: document.getElementById("plantNickname").value,
             date_acquired: document.getElementById("plantDateAcquired").value,
@@ -179,7 +156,7 @@ document.getElementById("healthLogForm").addEventListener("submit", async e => {
 
 // ---------- DUE STATUS ----------
 async function loadDueStatus() {
-    const rows = await api("/due_status");
+    const rows = await api(`/due_status/${currentUser.id}`);
     const tbody = document.querySelector("#dueTable tbody");
     tbody.innerHTML = "";
     rows.forEach(r => {
@@ -193,7 +170,6 @@ async function loadDueStatus() {
 }
 
 // ---------- INIT ----------
-loadUsers();
 loadSpecies();
 loadPlants();
 loadDueStatus();

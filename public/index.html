@@ -7,12 +7,15 @@
 </head>
 <body>
 <header>
-    <h1>Garden Care Tracker</h1>
+    <h1>🌿 Garden Care Tracker</h1>
+    <div class="user-bar">
+        <span id="currentUserName"></span>
+        <button id="logoutBtn">Logout</button>
+    </div>
     <nav>
         <button data-tab="dashboard" class="tab-btn active">Due Status</button>
         <button data-tab="plants" class="tab-btn">Plants</button>
         <button data-tab="species" class="tab-btn">Species</button>
-        <button data-tab="users" class="tab-btn">Users</button>
     </nav>
 </header>
 
@@ -30,7 +33,6 @@
     <section id="plants" class="tab-panel">
         <h2>Plants</h2>
         <form id="plantForm">
-            <select id="plantUser" required></select>
             <select id="plantSpecies" required></select>
             <input type="text" id="plantNickname" placeholder="Nickname">
             <input type="date" id="plantDateAcquired" required>
@@ -65,18 +67,6 @@
         </table>
     </section>
 
-    <section id="users" class="tab-panel">
-        <h2>Users</h2>
-        <form id="userForm">
-            <input type="text" id="userName" placeholder="Name" required>
-            <input type="email" id="userEmail" placeholder="Email" required>
-            <button type="submit">Add User</button>
-        </form>
-        <table id="usersTable">
-            <thead><tr><th>Name</th><th>Email</th><th></th></tr></thead>
-            <tbody></tbody>
-        </table>
-    </section>
 </main>
 
 <div id="logModal" class="modal hidden">

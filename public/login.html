@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Garden Care Tracker - Login</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page">
+<div class="auth-wrapper">
+    <div class="auth-brand">
+        <h1 class="auth-logo">🌿 Garden Care Tracker</h1>
+        <p class="auth-tagline">Never miss a watering again</p>
+    </div>
+
+    <div class="auth-card">
+        <div class="auth-tabs">
+            <button class="auth-tab active" id="loginTabBtn" onclick="showLoginForm()">Login</button>
+            <button class="auth-tab" id="registerTabBtn" onclick="showRegisterForm()">Register</button>
+        </div>
+
+        <div id="loginFormContainer" class="auth-form-container active">
+            <h2>Welcome Back</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="auth-btn">Sign In</button>
+            </form>
+            <div id="loginMessage" class="auth-message"></div>
+            <p class="auth-switch">Don't have an account? <a href="#" onclick="showRegisterForm(); return false;">Create one</a></p>
+        </div>
+
+        <div id="registerFormContainer" class="auth-form-container">
+            <h2>Create Account</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="regName">Full Name</label>
+                    <input type="text" id="regName" required>
+                </div>
+                <div class="form-group">
+                    <label for="regEmail">Email</label>
+                    <input type="email" id="regEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Password</label>
+                    <input type="password" id="regPassword" minlength="6" required>
+                </div>
+                <button type="submit" class="auth-btn">Create Account</button>
+            </form>
+            <div id="registerMessage" class="auth-message"></div>
+            <p class="auth-switch">Already have an account? <a href="#" onclick="showLoginForm(); return false;">Sign in</a></p>
+        </div>
+    </div>
+</div>
+<script src="auth.js"></script>
+</body>
+</html>
