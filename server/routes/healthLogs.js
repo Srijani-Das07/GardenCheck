@@ -1,27 +1,26 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../db");
+const healthLogModel = require("../models/healthLogModel");
+const AppError = require("../utils/AppError");
+const asyncHandler = require("../utils/asyncHandler");
 
-router.get("/plant/:plantId", async (req, res) => {
-    const result = await db.execute({
-        sql: "SELECT * FROM health_logs WHERE plant_id = ? ORDER BY date_logged DESC",
-        args: [req.params.plantId]
-    });
-    res.json(result.rows);
-});
+const VALID_STATUSES = ["thriving", "struggling", "dead"];
 
-router.post("/", async (req, res) => {
+router.get("/plant/:plantId", asyncHandler(async (req, res) => {
+    res.json(await healthLogModel.findByPlant(req.params.plantId));
+}));
+
+router.post("/", asyncHandler(async (req, res) => {
     const { plant_id, status, date_logged } = req.body;
-    const result = await db.execute({
-        sql: `INSERT INTO health_logs (plant_id, status, date_logged) VALUES (?, ?, ?)`,
-        args: [plant_id, status, date_logged]
-    });
-    res.json({ id: Number(result.lastInsertRowid) });
-});
+    if (!plant_id) throw new AppError(400, "plant_id is required.");
+    if (!VALID_STATUSES.includes(status)) throw new AppError(400, "Invalid status.");
+    if (!date_logged) throw new AppError(400, "Date is required.");
+    res.status(201).json(await healthLogModel.create(req.body));
+}));
 
-router.delete("/:id", async (req, res) => {
-    await db.execute({ sql: "DELETE FROM health_logs WHERE id = ?", args: [req.params.id] });
+router.delete("/:id", asyncHandler(async (req, res) => {
+    await healthLogModel.remove(req.params.id);
     res.json({ success: true });
-});
+}));
 
 module.exports = router;

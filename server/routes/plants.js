@@ -1,40 +1,36 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../db");
+const plantModel = require("../models/plantModel");
+const speciesModel = require("../models/speciesModel");
+const AppError = require("../utils/AppError");
+const asyncHandler = require("../utils/asyncHandler");
 
-router.get("/user/:userId", async (req, res) => {
-    const result = await db.execute({
-        sql: `SELECT plants.*, species.name AS species_name
-              FROM plants JOIN species ON plants.species_id = species.id
-              WHERE plants.user_id = ?`,
-        args: [req.params.userId]
-    });
-    res.json(result.rows);
-});
+router.get("/user/:userId", asyncHandler(async (req, res) => {
+    res.json(await plantModel.findByUser(req.params.userId));
+}));
 
-router.post("/", async (req, res) => {
-    const { user_id, species_id, nickname, date_acquired, location } = req.body;
-    const result = await db.execute({
-        sql: `INSERT INTO plants (user_id, species_id, nickname, date_acquired, location)
-              VALUES (?, ?, ?, ?, ?)`,
-        args: [user_id, species_id, nickname, date_acquired, location]
-    });
-    res.json({ id: Number(result.lastInsertRowid) });
-});
+router.post("/", asyncHandler(async (req, res) => {
+    const { user_id, species_id, date_acquired } = req.body;
+    if (!user_id) throw new AppError(400, "user_id is required.");
+    if (!species_id) throw new AppError(400, "Please choose a species.");
+    if (!date_acquired) throw new AppError(400, "Date acquired is required.");
+    const species = await speciesModel.findById(species_id);
+    if (!species) throw new AppError(400, "Selected species does not exist.");
+    res.status(201).json(await plantModel.create(req.body));
+}));
 
-router.put("/:id", async (req, res) => {
-    const { user_id, species_id, nickname, date_acquired, location } = req.body;
-    await db.execute({
-        sql: `UPDATE plants SET user_id = ?, species_id = ?, nickname = ?, date_acquired = ?, location = ?
-              WHERE id = ?`,
-        args: [user_id, species_id, nickname, date_acquired, location, req.params.id]
-    });
+router.put("/:id", asyncHandler(async (req, res) => {
+    const { species_id, date_acquired } = req.body;
+    if (!species_id) throw new AppError(400, "Please choose a species.");
+    if (!date_acquired) throw new AppError(400, "Date acquired is required.");
+    const existing = await plantModel.findById(req.params.id);
+    if (!existing) throw new AppError(404, "Plant not found.");
+    res.json(await plantModel.update(req.params.id, req.body));
+}));
+
+router.delete("/:id", asyncHandler(async (req, res) => {
+    await plantModel.remove(req.params.id);
     res.json({ success: true });
-});
-
-router.delete("/:id", async (req, res) => {
-    await db.execute({ sql: "DELETE FROM plants WHERE id = ?", args: [req.params.id] });
-    res.json({ success: true });
-});
+}));
 
 module.exports = router;

@@ -1,46 +1,37 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
-const db = require("../db");
+const userModel = require("../models/userModel");
+const AppError = require("../utils/AppError");
+const asyncHandler = require("../utils/asyncHandler");
 
-router.post("/register", async (req, res) => {
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+router.post("/register", asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
-    if (!name || !email || !password) {
-        return res.status(400).json({ error: "Name, email, and password are required." });
-    }
-    const existing = await db.execute({
-        sql: "SELECT id FROM users WHERE email = ?",
-        args: [email]
-    });
-    if (existing.rows.length > 0) {
-        return res.status(409).json({ error: "An account with this email already exists." });
-    }
-    const hashed = await bcrypt.hash(password, 10);
-    const result = await db.execute({
-        sql: "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-        args: [name, email, hashed]
-    });
-    res.json({ id: Number(result.lastInsertRowid), name, email });
-});
+    if (!name || !name.trim()) throw new AppError(400, "Name is required.");
+    if (!email || !EMAIL_RE.test(email)) throw new AppError(400, "A valid email is required.");
+    if (!password || password.length < 6) throw new AppError(400, "Password must be at least 6 characters.");
 
-router.post("/login", async (req, res) => {
+    const existing = await userModel.findByEmail(email.trim().toLowerCase());
+    if (existing) throw new AppError(409, "An account with this email already exists.");
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = await userModel.create({ name: name.trim(), email: email.trim().toLowerCase(), passwordHash });
+    res.status(201).json(user);
+}));
+
+router.post("/login", asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-    if (!email || !password) {
-        return res.status(400).json({ error: "Email and password are required." });
-    }
-    const result = await db.execute({
-        sql: "SELECT * FROM users WHERE email = ?",
-        args: [email]
-    });
-    const user = result.rows[0];
-    if (!user) {
-        return res.status(401).json({ error: "Invalid email or password." });
-    }
+    if (!email || !password) throw new AppError(400, "Email and password are required.");
+
+    const user = await userModel.findByEmail(email.trim().toLowerCase());
+    if (!user) throw new AppError(401, "Invalid email or password.");
+
     const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-        return res.status(401).json({ error: "Invalid email or password." });
-    }
+    if (!match) throw new AppError(401, "Invalid email or password.");
+
     res.json({ id: user.id, name: user.name, email: user.email });
-});
+}));
 
 module.exports = router;

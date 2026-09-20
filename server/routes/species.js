@@ -1,37 +1,35 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../db");
+const speciesModel = require("../models/speciesModel");
+const AppError = require("../utils/AppError");
+const asyncHandler = require("../utils/asyncHandler");
 
-router.get("/", async (req, res) => {
-    const result = await db.execute("SELECT * FROM species");
-    res.json(result.rows);
-});
+function validate(b) {
+    if (!b.name || !b.name.trim()) throw new AppError(400, "Species name is required.");
+    if (!b.watering_interval_days || Number(b.watering_interval_days) <= 0) {
+        throw new AppError(400, "Watering interval must be a positive number.");
+    }
+}
 
-router.post("/", async (req, res) => {
-    const { name, watering_interval_days, sunlight_needs, fertilizing_interval_days, ideal_temp_min, ideal_temp_max, difficulty_level } = req.body;
-    const result = await db.execute({
-        sql: `INSERT INTO species
-              (name, watering_interval_days, sunlight_needs, fertilizing_interval_days, ideal_temp_min, ideal_temp_max, difficulty_level)
-              VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        args: [name, watering_interval_days, sunlight_needs, fertilizing_interval_days, ideal_temp_min, ideal_temp_max, difficulty_level]
-    });
-    res.json({ id: Number(result.lastInsertRowid) });
-});
+router.get("/", asyncHandler(async (req, res) => {
+    res.json(await speciesModel.findAll());
+}));
 
-router.put("/:id", async (req, res) => {
-    const { name, watering_interval_days, sunlight_needs, fertilizing_interval_days, ideal_temp_min, ideal_temp_max, difficulty_level } = req.body;
-    await db.execute({
-        sql: `UPDATE species SET name = ?, watering_interval_days = ?, sunlight_needs = ?,
-              fertilizing_interval_days = ?, ideal_temp_min = ?, ideal_temp_max = ?, difficulty_level = ?
-              WHERE id = ?`,
-        args: [name, watering_interval_days, sunlight_needs, fertilizing_interval_days, ideal_temp_min, ideal_temp_max, difficulty_level, req.params.id]
-    });
+router.post("/", asyncHandler(async (req, res) => {
+    validate(req.body);
+    res.status(201).json(await speciesModel.create(req.body));
+}));
+
+router.put("/:id", asyncHandler(async (req, res) => {
+    validate(req.body);
+    const existing = await speciesModel.findById(req.params.id);
+    if (!existing) throw new AppError(404, "Species not found.");
+    res.json(await speciesModel.update(req.params.id, req.body));
+}));
+
+router.delete("/:id", asyncHandler(async (req, res) => {
+    await speciesModel.remove(req.params.id);
     res.json({ success: true });
-});
-
-router.delete("/:id", async (req, res) => {
-    await db.execute({ sql: "DELETE FROM species WHERE id = ?", args: [req.params.id] });
-    res.json({ success: true });
-});
+}));
 
 module.exports = router;

@@ -1,24 +1,20 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../db");
+const userModel = require("../models/userModel");
+const AppError = require("../utils/AppError");
+const asyncHandler = require("../utils/asyncHandler");
 
-router.get("/", async (req, res) => {
-    const result = await db.execute("SELECT id, name, email FROM users");
-    res.json(result.rows);
-});
-
-router.put("/:id", async (req, res) => {
+router.put("/:id", asyncHandler(async (req, res) => {
     const { name, email } = req.body;
-    await db.execute({
-        sql: "UPDATE users SET name = ?, email = ? WHERE id = ?",
-        args: [name, email, req.params.id]
-    });
-    res.json({ success: true });
-});
+    if (!name || !name.trim()) throw new AppError(400, "Name is required.");
+    if (!email) throw new AppError(400, "Email is required.");
+    const user = await userModel.update(req.params.id, { name: name.trim(), email: email.trim().toLowerCase() });
+    res.json(user);
+}));
 
-router.delete("/:id", async (req, res) => {
-    await db.execute({ sql: "DELETE FROM users WHERE id = ?", args: [req.params.id] });
+router.delete("/:id", asyncHandler(async (req, res) => {
+    await userModel.remove(req.params.id);
     res.json({ success: true });
-});
+}));
 
 module.exports = router;
