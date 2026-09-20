@@ -6,93 +6,176 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div id="toastContainer" class="toast-container"></div>
+
 <header>
     <h1>🌿 Garden Care Tracker</h1>
     <div class="user-bar">
         <span id="currentUserName"></span>
-        <button id="logoutBtn">Logout</button>
+        <button id="logoutBtn" class="btn-secondary">Logout</button>
     </div>
     <nav>
-        <button data-tab="dashboard" class="tab-btn active">Due Status</button>
-        <button data-tab="plants" class="tab-btn">Plants</button>
-        <button data-tab="species" class="tab-btn">Species</button>
+        <button data-page="garden" class="nav-btn active">My Garden</button>
+        <button data-page="species" class="nav-btn">Species</button>
     </nav>
 </header>
 
 <main>
-    <section id="dashboard" class="tab-panel active">
-        <h2>Care Due Status</h2>
-        <table id="dueTable">
-            <thead>
-                <tr><th>Plant</th><th>Species</th><th>Last Watered</th><th>Interval (days)</th><th>Days Overdue</th></tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+    <section id="garden" class="page active">
+        <div class="page-header">
+            <h2>My Garden</h2>
+            <button id="addPlantBtn" class="btn-primary">+ Add Plant</button>
+        </div>
+        <p id="plantsEmptyState" class="empty-state hidden"></p>
+        <div id="plantsGrid" class="card-grid"></div>
     </section>
 
-    <section id="plants" class="tab-panel">
-        <h2>Plants</h2>
-        <form id="plantForm">
-            <select id="plantSpecies" required></select>
-            <input type="text" id="plantNickname" placeholder="Nickname">
-            <input type="date" id="plantDateAcquired" required>
-            <input type="text" id="plantLocation" placeholder="Location">
-            <button type="submit">Add Plant</button>
+    <section id="species" class="page">
+        <div class="page-header"><h2>Species</h2></div>
+        <form id="speciesForm" class="card-form">
+            <input type="hidden" id="speciesEditId">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="spName">Name</label>
+                    <input type="text" id="spName" placeholder="e.g. Snake Plant" required>
+                </div>
+                <div class="form-group">
+                    <label for="spWatering">Watering interval (days)</label>
+                    <input type="number" id="spWatering" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="spSunlight">Sunlight needs</label>
+                    <select id="spSunlight">
+                        <option value="">Select</option>
+                        <option value="Low">Low</option>
+                        <option value="Indirect">Indirect</option>
+                        <option value="Direct">Direct</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="spFertilizing">Fertilizing interval</label>
+                    <select id="spFertilizing">
+                        <option value="">No fertilizer needed</option>
+                        <option value="14">Every 14 days</option>
+                        <option value="21">Every 21 days</option>
+                        <option value="30">Every 30 days</option>
+                        <option value="45">Every 45 days</option>
+                        <option value="60">Every 60 days</option>
+                        <option value="90">Every 90 days</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="spTempMin">Ideal temp min (°C)</label>
+                    <input type="number" id="spTempMin">
+                </div>
+                <div class="form-group">
+                    <label for="spTempMax">Ideal temp max (°C)</label>
+                    <input type="number" id="spTempMax">
+                </div>
+                <div class="form-group">
+                    <label for="spDifficulty">Difficulty</label>
+                    <select id="spDifficulty">
+                        <option value="">Select</option>
+                        <option value="Easy">Easy</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Hard">Hard</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" id="speciesSubmitBtn" class="btn-primary">Add Species</button>
+                <button type="button" id="speciesCancelBtn" class="btn-secondary hidden">Cancel</button>
+            </div>
         </form>
-        <table id="plantsTable">
-            <thead>
-                <tr><th>Nickname</th><th>Species</th><th>Owner</th><th>Location</th><th>Acquired</th><th>Log Care</th><th>Log Health</th><th></th></tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </section>
 
-    <section id="species" class="tab-panel">
-        <h2>Species</h2>
-        <form id="speciesForm">
-            <input type="text" id="spName" placeholder="Name" required>
-            <input type="number" id="spWatering" placeholder="Watering interval (days)" required>
-            <input type="text" id="spSunlight" placeholder="Sunlight needs">
-            <input type="number" id="spFertilizing" placeholder="Fertilizing interval (days)">
-            <input type="number" id="spTempMin" placeholder="Ideal temp min">
-            <input type="number" id="spTempMax" placeholder="Ideal temp max">
-            <input type="text" id="spDifficulty" placeholder="Difficulty level">
-            <button type="submit">Add Species</button>
-        </form>
-        <table id="speciesTable">
+        <p id="speciesEmptyState" class="empty-state hidden">No species yet. Add one above before adding plants.</p>
+        <table id="speciesTable" class="data-table">
             <thead>
                 <tr><th>Name</th><th>Watering</th><th>Sunlight</th><th>Fertilizing</th><th>Temp Range</th><th>Difficulty</th><th></th></tr>
             </thead>
             <tbody></tbody>
         </table>
     </section>
-
 </main>
 
+<!-- Add / Edit Plant modal -->
+<div id="plantModal" class="modal hidden">
+    <div class="modal-content">
+        <h3 id="plantModalTitle">Add Plant</h3>
+        <form id="plantForm">
+            <input type="hidden" id="plantEditId">
+            <div class="form-group">
+                <label for="plantSpecies">Species</label>
+                <select id="plantSpecies" required></select>
+            </div>
+            <div class="form-group">
+                <label for="plantNickname">Nickname</label>
+                <input type="text" id="plantNickname" placeholder="e.g. Sansy">
+            </div>
+            <div class="form-group">
+                <label for="plantDateAcquired">Date acquired</label>
+                <input type="date" id="plantDateAcquired" required>
+            </div>
+            <div class="form-group">
+                <label for="plantLocation">Location</label>
+                <input type="text" id="plantLocation" placeholder="e.g. Balcony">
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Save</button>
+                <button type="button" class="btn-secondary modal-close">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Log Activity modal -->
 <div id="logModal" class="modal hidden">
     <div class="modal-content">
-        <h3 id="logModalTitle">Log Entry</h3>
-        <form id="careLogForm" class="hidden">
-            <select id="careActionType" required>
-                <option value="watered">Watered</option>
-                <option value="fertilized">Fertilized</option>
-                <option value="repotted">Repotted</option>
-                <option value="pruned">Pruned</option>
-            </select>
-            <input type="date" id="careDate" required>
-            <textarea id="careNotes" placeholder="Notes"></textarea>
-            <button type="submit">Save Care Log</button>
+        <h3>Log Activity</h3>
+        <p id="logModalSubtitle" class="modal-subtitle"></p>
+        <form id="logForm">
+            <div class="form-group">
+                <label for="logType">Type</label>
+                <select id="logType">
+                    <option value="watered">Watered</option>
+                    <option value="fertilized">Fertilized</option>
+                    <option value="repotted">Repotted</option>
+                    <option value="pruned">Pruned</option>
+                    <option value="health">Health Update</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="logDate">Date</label>
+                <input type="date" id="logDate" required>
+            </div>
+            <div class="form-group" id="logNotesGroup">
+                <label for="logNotes">Notes</label>
+                <textarea id="logNotes" placeholder="Optional"></textarea>
+            </div>
+            <div class="form-group hidden" id="logStatusGroup">
+                <label for="logStatus">Status</label>
+                <select id="logStatus">
+                    <option value="thriving">Thriving</option>
+                    <option value="struggling">Struggling</option>
+                    <option value="dead">Dead</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Save</button>
+                <button type="button" class="btn-secondary modal-close">Cancel</button>
+            </div>
         </form>
-        <form id="healthLogForm" class="hidden">
-            <select id="healthStatus" required>
-                <option value="thriving">Thriving</option>
-                <option value="struggling">Struggling</option>
-                <option value="dead">Dead</option>
-            </select>
-            <input type="date" id="healthDate" required>
-            <button type="submit">Save Health Log</button>
-        </form>
-        <button id="closeModal">Close</button>
+    </div>
+</div>
+
+<!-- History modal -->
+<div id="historyModal" class="modal hidden">
+    <div class="modal-content">
+        <h3>History</h3>
+        <p id="historyModalSubtitle" class="modal-subtitle"></p>
+        <div id="historyList"></div>
+        <button id="historyShowAllBtn" class="btn-small hidden">Show all</button>
+        <button class="btn-secondary modal-close">Close</button>
     </div>
 </div>
 
