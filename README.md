@@ -1,6 +1,6 @@
 # GardenCheck
 
-GardenCheck (displayed in the interface as **Garden Care Tracker**) is a full-stack web application for tracking the care of household and garden plants. It records plant species and their care requirements, the individual plants a user owns, and a history of care actions and health observations. From this history it calculates when each plant is next due for watering and fertilizing, and shows that status on the dashboard with colour-coded indicators.
+GardenCheck is a full-stack web application for tracking the care of household and garden plants. It records plant species and their care requirements, the individual plants a user owns, and a history of care actions and health observations. From this history it calculates when each plant is next due for watering and fertilizing, and shows that status on the dashboard with colour-coded indicators.
 
 The application uses a Node.js and Express REST API, a hosted SQLite-compatible database (Turso, accessed through libSQL), and a plain HTML, CSS and JavaScript frontend with no build step.
 
